@@ -1,0 +1,15 @@
+[package]
+name = "imei"
+version = "1.0.0"
+authors = ["Grant Handy <grantshandy@gmail.com>"]
+description = "An IMEI number validator"
+repository = "https://github.com/grantshandy/imei"
+documentation = "https://docs.rs/imei"
+license = "MIT"
+readme = "README.md"
+exclude = ["target", "Cargo.lock"]
+keywords = ["imei", "luhn", "phone", "mobile", "identity"]
+edition = "2021"
+
+[dev-dependencies]
+chrono = "0.4"
