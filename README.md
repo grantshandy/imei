@@ -2,7 +2,7 @@
 An IMEI number validator implemented in Rust.
 
 Add to Cargo.toml:
-```
+```toml
 imei = "1.0.0"
 ```
 
@@ -18,7 +18,7 @@ fn main() {
 ```
 
 Result:
-```
+```toml
 490154203237518: true
 ```
 

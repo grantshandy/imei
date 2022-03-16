@@ -2,10 +2,11 @@
 
 /// Check to see if an IMEI number is valid.
 pub fn valid<A: AsRef<str>>(imei: A) -> bool {
-    let chars = imei.as_ref().chars();
+    let s = imei.as_ref();
 
-    // check for number length
-    if chars.clone().count() != 15 {
+    // str::len is acceptable because if s is numeric (therefore valid),
+    //   there will not be issues with UTF-8
+    if s.len() != 15 {
         return false;
     }
 
@@ -13,7 +14,7 @@ pub fn valid<A: AsRef<str>>(imei: A) -> bool {
     let mut sum: u8 = 0;
 
     // go through each character in the imei
-    for (i, c) in chars.enumerate() {
+    for (i, c) in s.chars().enumerate() {
         // convert the chars into u8
         // I precalculated these so it doesn't have to parse the char as a string
         // It also makes sure that the input is only numeric
