@@ -1,6 +1,6 @@
 [package]
 name = "imei"
-version = "1.0.0"
+version = "1.0.1"
 authors = ["Grant Handy <grantshandy@gmail.com>"]
 description = "An IMEI number validator"
 repository = "https://github.com/grantshandy/imei"
