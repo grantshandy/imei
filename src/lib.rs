@@ -1,4 +1,5 @@
 #![doc = include_str!("../README.md")]
+#![no_std]
 
 /// Check to see if an IMEI number is valid.
 pub fn valid<A: AsRef<str>>(imei: A) -> bool {
