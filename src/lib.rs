@@ -1,12 +1,15 @@
 #![doc = include_str!("../README.md")]
 #![no_std]
 
+use core::fmt::Display;
+
 pub enum Error {
     /// IMEI was invalid
     InvalidImei,
 }
 
 /// A validated IMEI
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 pub struct Imei<A: AsRef<str>> {
     inner: A,
 }
@@ -30,6 +33,12 @@ impl<A: AsRef<str>> Imei<A> {
         } else {
             Err(Error::InvalidImei)
         }
+    }
+}
+
+impl<A: AsRef<str>> Display for Imei<A> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        write!(f, "{}", self.inner.as_ref())
     }
 }
 
