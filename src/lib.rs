@@ -1,8 +1,40 @@
 #![doc = include_str!("../README.md")]
 #![no_std]
 
+pub enum Error {
+    /// IMEI was invalid
+    InvalidImei,
+}
+
+/// A validated IMEI
+pub struct Imei<A: AsRef<str>> {
+    inner: A,
+}
+
+impl<A: AsRef<str>> Imei<A> {
+    /// Try to create a new [Imei]. Fails if the passed IMEI
+    /// is invalid.
+    pub fn try_new(imei_str: A) -> Result<Self, Error> {
+        Imei::validate(imei_str.as_ref()).map(|_| Self { inner: imei_str })
+    }
+
+    /// Get inner IMEI representation
+    pub fn into_inner(self) -> A {
+        self.inner
+    }
+
+    /// Validate an IMEI
+    pub fn validate(imei: A) -> Result<(), Error> {
+        if imei_valid(imei) {
+            Ok(())
+        } else {
+            Err(Error::InvalidImei)
+        }
+    }
+}
+
 /// Check to see if an IMEI number is valid.
-pub fn valid<A: AsRef<str>>(imei: A) -> bool {
+pub fn imei_valid<A: AsRef<str>>(imei: A) -> bool {
     let s = imei.as_ref();
 
     // str::len is acceptable because if s is numeric (therefore valid),
