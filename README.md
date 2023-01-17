@@ -23,4 +23,4 @@ Result:
 ```
 
 ## Speed
-This validator is designed to be as fast and efficient as possible, it uses small number types, precalculates the character conversions and only iterates through the imei number once. The speed test in the tests directory gets the average speed of validation over 10,000,000 validations. On an AMD Ryzen 7 4700u, validation takes 3149 nanoseconds (0.003149 miliseconds).
+This validator is designed to be as fast and efficient as possible, it uses small number types, precalculates the character conversions and only iterates through the imei number once. The speed test in the tests directory gets the average speed of validation over 10,000,000 validations. Typically, the validation process sub 100th of a milisecond (practically instant).
