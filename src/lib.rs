@@ -1,5 +1,58 @@
 #![doc = include_str!("../README.md")]
-#![no_std]
+#![cfg_attr(not(feature = "std"), no_std)]
+
+use core::fmt::Display;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum Error {
+    /// IMEI was invalid
+    InvalidImei,
+}
+
+impl Display for Error {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match self {
+            Error::InvalidImei => write!(f, "IMEI is invalid"),
+        }
+    }
+}
+
+#[cfg(feature = "std")]
+impl std::error::Error for Error {}
+
+/// A validated IMEI
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+pub struct Imei<I> {
+    inner: I,
+}
+
+impl<I: AsRef<str>> Imei<I> {
+    /// Try to create a new [Imei]. Fails if the passed IMEI
+    /// is invalid.
+    pub fn try_new(imei_str: I) -> Result<Self, Error> {
+        Imei::validate(imei_str.as_ref()).map(|_| Self { inner: imei_str })
+    }
+
+    /// Get inner IMEI representation
+    pub fn into_inner(self) -> I {
+        self.inner
+    }
+
+    /// Validate an IMEI
+    pub fn validate(imei: I) -> Result<(), Error> {
+        if valid(imei) {
+            Ok(())
+        } else {
+            Err(Error::InvalidImei)
+        }
+    }
+}
+
+impl<I: AsRef<str>> Display for Imei<I> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        write!(f, "{}", self.inner.as_ref())
+    }
+}
 
 /// Check to see if an IMEI number is valid.
 pub fn valid<A: AsRef<str>>(imei: A) -> bool {
