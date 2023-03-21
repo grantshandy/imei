@@ -1,8 +1,10 @@
 #![doc = include_str!("../README.md")]
+#![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use core::fmt::Display;
 
+/// A common error for [`Imei`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Error {
     /// IMEI was invalid
@@ -20,7 +22,7 @@ impl Display for Error {
 #[cfg(feature = "std")]
 impl std::error::Error for Error {}
 
-/// A validated IMEI
+/// A type representing a valid IMEI
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 pub struct Imei<I> {
     inner: I,
@@ -33,12 +35,12 @@ impl<I: AsRef<str>> Imei<I> {
         Imei::validate(imei_str.as_ref()).map(|_| Self { inner: imei_str })
     }
 
-    /// Get inner IMEI representation
+    /// Get inner IMEI representation.
     pub fn into_inner(self) -> I {
         self.inner
     }
 
-    /// Validate an IMEI
+    /// Validate an IMEI.
     pub fn validate(imei: I) -> Result<(), Error> {
         if valid(imei) {
             Ok(())
@@ -90,7 +92,7 @@ pub fn valid<A: AsRef<str>>(imei: A) -> bool {
         // if we are on an odd index (starting at 1)
         if (i + 1) % 2 == 0 {
             // our number is multiplied by two
-            n = n * 2;
+            n *= 2;
 
             // if that makes a double digit number make then add together the digits
             if n > 9 {
