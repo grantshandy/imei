@@ -34,3 +34,20 @@ fn test() -> i64 {
 
     difference
 }
+
+#[test]
+#[cfg(feature = "serde")]
+fn test_serde() {
+    use imei::Imei;
+    use serde::Deserialize;
+
+    #[derive(serde::Serialize, Deserialize)]
+    struct ContainsImei {
+        imei: Imei<String>,
+    }
+
+    let json = serde_json::to_string(&Imei::try_new("354406185514933").unwrap()).unwrap();
+    assert_eq!(json, "\"354406185514933\"");
+    let imei: Imei<String> = serde_json::from_str("\"354406185514933\"").unwrap();
+    assert_eq!(imei, Imei::try_new("354406185514933".to_string()).unwrap())
+}

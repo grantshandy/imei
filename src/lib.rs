@@ -115,9 +115,62 @@ pub fn valid<A: AsRef<str>>(imei: A) -> bool {
     }
 
     // return true if we're evenly divisible by 10
-    if sum % 10 == 0 {
-        return true;
-    } else {
-        return false;
+    sum % 10 == 0
+}
+
+#[cfg(feature = "serde")]
+impl<I> serde::Serialize for Imei<I>
+where
+    I: AsRef<str>,
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(self.inner.as_ref())
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de, I> serde::Deserialize<'de> for Imei<I>
+where
+    for<'s> I: From<&'s str>,
+{
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        use std::marker::PhantomData;
+        struct ImeiVisitor<I> {
+            _marker: PhantomData<I>,
+        }
+
+        impl<'d, I> serde::de::Visitor<'d> for ImeiVisitor<I>
+        where
+            for<'s> I: From<&'s str>,
+        {
+            type Value = Imei<I>;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                formatter.write_str("a string representing a valid IMEI")
+            }
+
+            fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                if valid(v) {
+                    Ok(Imei { inner: I::from(v) })
+                } else {
+                    Err(E::custom(Error::InvalidImei))
+                }
+            }
+        }
+
+        let visitor: ImeiVisitor<I> = ImeiVisitor {
+            _marker: PhantomData,
+        };
+
+        deserializer.deserialize_any(visitor)
     }
 }
