@@ -28,5 +28,5 @@ The speed test in the tests directory gets the average speed of validation over 
 Typically, the validation process sub 1000th of a milisecond (practically instant!).
 
 ## Features
- - The `std` is enabled by default which implements `error::Error` for `imei::Error`;
+ - The `std` is enabled by default which implements `error::Error` for `imei::Error`.
  - The `serde` feature adds serialization/deserialization for the `Imei` struct.
