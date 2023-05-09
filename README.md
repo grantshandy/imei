@@ -30,3 +30,4 @@ Typically, the validation process sub 1000th of a milisecond (practically instan
 ## Features
  - The `std` is enabled by default which implements `error::Error` for `imei::Error`.
  - The `serde` feature adds serialization/deserialization for the `Imei` struct.
+ - The `openapi` adds implementations for `utoipa::ToSchema` and `utoipa::ToResponse`.

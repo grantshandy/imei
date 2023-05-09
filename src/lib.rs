@@ -56,6 +56,45 @@ impl<I: AsRef<str>> Display for Imei<I> {
     }
 }
 
+#[cfg(feature = "openapi")]
+mod openapi {
+    use serde_json::json;
+    use utoipa::{
+        openapi::{
+            response::Response, schema::Schema, ObjectBuilder, RefOr, ResponseBuilder, SchemaType,
+        },
+        ToResponse, ToSchema,
+    };
+
+    use crate::Imei;
+
+    impl<'r, I: AsRef<str>> ToResponse<'r> for Imei<I> {
+        fn response() -> (&'r str, RefOr<Response>) {
+            (
+                "Imei",
+                ResponseBuilder::new()
+                    .description("A valid International Mobile Equipment Identity number")
+                    .build()
+                    .into(),
+            )
+        }
+    }
+
+    impl<'s, I: AsRef<str>> ToSchema<'s> for Imei<I> {
+        fn schema() -> (&'s str, RefOr<Schema>) {
+            (
+                "Imei",
+                ObjectBuilder::new()
+                    .schema_type(SchemaType::String)
+                    // IMEI consists of 15 digits
+                    .pattern(Some(r"^\d{15}$"))
+                    .example(Some(json!("522872587498800")))
+                    .into(),
+            )
+        }
+    }
+}
+
 /// Check to see if an IMEI number is valid.
 pub fn valid<A: AsRef<str>>(imei: A) -> bool {
     let s = imei.as_ref();
