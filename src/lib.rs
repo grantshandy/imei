@@ -56,45 +56,6 @@ impl<I: AsRef<str>> Display for Imei<I> {
     }
 }
 
-#[cfg(feature = "openapi")]
-mod openapi {
-    use serde_json::json;
-    use utoipa::{
-        openapi::{
-            response::Response, schema::Schema, ObjectBuilder, RefOr, ResponseBuilder, SchemaType,
-        },
-        ToResponse, ToSchema,
-    };
-
-    use crate::Imei;
-
-    impl<'r, I: AsRef<str>> ToResponse<'r> for Imei<I> {
-        fn response() -> (&'r str, RefOr<Response>) {
-            (
-                "Imei",
-                ResponseBuilder::new()
-                    .description("A valid International Mobile Equipment Identity number")
-                    .build()
-                    .into(),
-            )
-        }
-    }
-
-    impl<'s, I: AsRef<str>> ToSchema<'s> for Imei<I> {
-        fn schema() -> (&'s str, RefOr<Schema>) {
-            (
-                "Imei",
-                ObjectBuilder::new()
-                    .schema_type(SchemaType::String)
-                    // IMEI consists of 15 digits
-                    .pattern(Some(r"^\d{15}$"))
-                    .example(Some(json!("522872587498800")))
-                    .into(),
-            )
-        }
-    }
-}
-
 /// Check to see if an IMEI number is valid.
 pub fn valid<A: AsRef<str>>(imei: A) -> bool {
     let s = imei.as_ref();
@@ -160,58 +121,102 @@ pub fn valid<A: AsRef<str>>(imei: A) -> bool {
 }
 
 #[cfg(feature = "serde")]
-impl<I> serde::Serialize for Imei<I>
-where
-    I: AsRef<str>,
-{
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+mod serde {
+    use crate::{valid, Error, Imei};
+    use serde::{de::Visitor, Deserialize, Deserializer, Serialize, Serializer};
+
+    impl<I> Serialize for Imei<I>
     where
-        S: serde::Serializer,
+        I: AsRef<str>,
     {
-        serializer.serialize_str(self.inner.as_ref())
+        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: Serializer,
+        {
+            serializer.serialize_str(self.inner.as_ref())
+        }
+    }
+
+    impl<'de, I> Deserialize<'de> for Imei<I>
+    where
+        for<'s> I: From<&'s str>,
+    {
+        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where
+            D: Deserializer<'de>,
+        {
+            use std::fmt;
+            use std::marker::PhantomData;
+            struct ImeiVisitor<I> {
+                _marker: PhantomData<I>,
+            }
+
+            impl<'d, I> Visitor<'d> for ImeiVisitor<I>
+            where
+                for<'s> I: From<&'s str>,
+            {
+                type Value = Imei<I>;
+
+                fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                    formatter.write_str("a string representing a valid IMEI")
+                }
+
+                fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+                where
+                    E: serde::de::Error,
+                {
+                    if valid(v) {
+                        Ok(Imei { inner: I::from(v) })
+                    } else {
+                        Err(E::custom(Error::InvalidImei))
+                    }
+                }
+            }
+
+            let visitor: ImeiVisitor<I> = ImeiVisitor {
+                _marker: PhantomData,
+            };
+
+            deserializer.deserialize_any(visitor)
+        }
     }
 }
 
-#[cfg(feature = "serde")]
-impl<'de, I> serde::Deserialize<'de> for Imei<I>
-where
-    for<'s> I: From<&'s str>,
-{
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        use std::marker::PhantomData;
-        struct ImeiVisitor<I> {
-            _marker: PhantomData<I>,
+#[cfg(feature = "openapi")]
+mod openapi {
+    use serde_json::json;
+    use utoipa::{
+        openapi::{
+            response::Response, schema::Schema, ObjectBuilder, RefOr, ResponseBuilder, SchemaType,
+        },
+        ToResponse, ToSchema,
+    };
+
+    use crate::Imei;
+
+    impl<'r, I: AsRef<str>> ToResponse<'r> for Imei<I> {
+        fn response() -> (&'r str, RefOr<Response>) {
+            (
+                "Imei",
+                ResponseBuilder::new()
+                    .description("A valid International Mobile Equipment Identity number")
+                    .build()
+                    .into(),
+            )
         }
+    }
 
-        impl<'d, I> serde::de::Visitor<'d> for ImeiVisitor<I>
-        where
-            for<'s> I: From<&'s str>,
-        {
-            type Value = Imei<I>;
-
-            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-                formatter.write_str("a string representing a valid IMEI")
-            }
-
-            fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
-            where
-                E: serde::de::Error,
-            {
-                if valid(v) {
-                    Ok(Imei { inner: I::from(v) })
-                } else {
-                    Err(E::custom(Error::InvalidImei))
-                }
-            }
+    impl<'s, I: AsRef<str>> ToSchema<'s> for Imei<I> {
+        fn schema() -> (&'s str, RefOr<Schema>) {
+            (
+                "Imei",
+                ObjectBuilder::new()
+                    .schema_type(SchemaType::String)
+                    // IMEI consists of 15 digits
+                    .pattern(Some(r"^\d{15}$"))
+                    .example(Some(json!("522872587498800")))
+                    .into(),
+            )
         }
-
-        let visitor: ImeiVisitor<I> = ImeiVisitor {
-            _marker: PhantomData,
-        };
-
-        deserializer.deserialize_any(visitor)
     }
 }
