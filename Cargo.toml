@@ -14,12 +14,15 @@ edition = "2021"
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"], optional = true }
+utoipa = { version = "3.3.0", optional = true }
+serde_json = { version = "1.0", default-features = false, optional = true }
 
 [dev-dependencies]
 chrono = "0.4"
 serde_json = "1.0"
 
 [features]
-default = ["std", "serde"]
+default = ["std", "serde", "openapi"]
 std = []
 serde = ["dep:serde"]
+openapi = ["dep:utoipa", "dep:serde_json"]
